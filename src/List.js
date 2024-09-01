@@ -1,11 +1,26 @@
 import React from 'react';
 import movieData from './data/movies_metadata.json';
+import publicConfigurations from './data/public_configurations.json';
+import header from './img/cinemalchemist-text.webp';
+import background from './img/cinemalchemist-spilling-gold.webp';
 // import movieData from './data/movies_metadata_sample.json';
 console.time("init")
 
 const PAGE_SIZE = 20
 
 const primaryKey = "imdb_id"
+
+const mostlyUnwatchedColumnWeights = [
+  {"breakpoint": 0, "weight": 0},
+  {"breakpoint": 2013, "weight": -0.1},
+  {"breakpoint": 2017, "weight": -1},
+  {"breakpoint": 2019, "weight": -3},
+  {"breakpoint": 2020, "weight": -6},
+  {"breakpoint": 2021, "weight": -12},
+  {"breakpoint": 2022, "weight": -25},
+  {"breakpoint": 2023, "weight": -50},
+  {"breakpoint": 2024, "weight": -100}
+]
 
 
 
@@ -94,6 +109,7 @@ const Columns = {
     quantifiable: false,
     weighable: false,
     type: "string",
+    bold: true,
   },
   release_date: {
     displayName: 'Year',
@@ -353,31 +369,39 @@ movieData.forEach(movie=>{
 })
 console.log(`Columns:`, Columns)
 
+const initialConfigurationId = crypto.randomUUID()
 const DefaultSettings = {
-  columnWeights: {
-    ...Object.entries(Columns).reduce((columnWeights, [colName, colInfo])=>{
-      if (colInfo.weighable) {
-        let weights = []
-        colInfo.defaultWeights.forEach(({breakpoint, weight})=> {
-          let key
-          if (breakpoint==="highest") {
-            key = colInfo.maxValue
-          } else if (breakpoint==="lowest") {
-            key = colInfo.minValue
-          } else {
-            key = breakpoint
-          }
-          weights.push({
-            breakpoint: key,
-            weight: weight
-          })
-        })
-        columnWeights[colName] = weights
-      }
-      return columnWeights
-    }, {}),
+  configurations: {
+    [initialConfigurationId]: {
+      columnWeights: structuredClone(Object.values(publicConfigurations)[0].columnWeights),
+      displayName: "My Picks"
+    }
   },
+  currentConfigurationId: initialConfigurationId,
   movieSettings: {} // settings for individual movies, like watchlist or watched
+  // columnWeights: {
+  //   ...Object.entries(Columns).reduce((columnWeights, [colName, colInfo])=>{
+  //     if (colInfo.weighable) {
+  //       let weights = []
+  //       colInfo.defaultWeights.forEach(({breakpoint, weight})=> {
+  //         let key
+  //         if (breakpoint==="highest") {
+  //           key = colInfo.maxValue
+  //         } else if (breakpoint==="lowest") {
+  //           key = colInfo.minValue
+  //         } else {
+  //           key = breakpoint
+  //         }
+  //         weights.push({
+  //           breakpoint: key,
+  //           weight: weight
+  //         })
+  //       })
+  //       columnWeights[colName] = weights
+  //     }
+  //     return columnWeights
+  //   }, {}),
+  // },
 }
 console.timeEnd("column values")
 
@@ -389,7 +413,6 @@ export default class List extends React.Component {
     try {
       savedSettings = JSON.parse(localStorage.getItem('savedSettings'))
       savedSettings = {...DefaultSettings, ...savedSettings}
-      savedSettings.columnWeights = {...DefaultSettings.columnWeights, ...savedSettings.columnWeights} // if they were missing any columns, add them in
     } catch (e) {
       savedSettings = DefaultSettings
     }
@@ -398,6 +421,8 @@ export default class List extends React.Component {
       pageNumber: 0,
       freezeListOrder: false,
       onlyUnsortedWatched: false,
+      onlyUnwatched: false,
+      mostlyUnwatched: false,
     }
   }
   saveSettings=(settings)=>{
@@ -409,18 +434,53 @@ export default class List extends React.Component {
       }
     })
   }
+  copyConfiguration=(configuration)=>{
+    const newId = crypto.randomUUID()
+    let newDisplayName = configuration.displayName
+    do {
+      const number = / \d+$/.exec(newDisplayName)?.[0]
+      if (number) {
+        newDisplayName = newDisplayName.replace(/ \d+$/, ` ${parseInt(number)+1}`)
+      } else {
+        newDisplayName = newDisplayName + " 2"
+      }
+    } while (Object.values({...publicConfigurations, ...this.state.savedSettings.configurations}).find(conf=>conf.displayName===newDisplayName))
+    this.saveSettings({
+      configurations: {...this.state.savedSettings.configurations, [newId]: {
+        columnWeights: structuredClone(configuration.columnWeights), 
+        displayName: newDisplayName,
+      }},
+      currentConfigurationId: newId,
+    })
+  }
+  deleteConfiguration=()=>{
+    const configurations = this.state.savedSettings.configurations
+    delete configurations[this.state.savedSettings.currentConfigurationId]
+    this.saveSettings({
+      configurations,
+      currentConfigurationId: Object.keys(configurations)[0] ?? Object.keys(publicConfigurations)[0],
+    })
+  }
   lastSort = {}
-  sortMovies=({movieData, savedSettings})=>{
-    if (this.state.freezeListOrder && this.lastSort.list) return this.lastSort.list;
+  sortMovies=({movieData, savedSettings, configuration})=>{
+    if (this.state.freezeListOrder && this.lastSort.list) {
+      return {
+        didChange: false, 
+        sortedList: this.lastSort.list
+      };
+    }
 
-    const stringifiedSettings = JSON.stringify(savedSettings)
+    const stringifiedSettings = JSON.stringify({savedSettings, configuration})
     if (this.lastSort.stringifiedSettings===stringifiedSettings) {
-      return this.lastSort.list
+      return {
+        didChange: false, 
+        sortedList: this.lastSort.list
+      };
     } else {
       const list = movieData.reduce((acc, movie, movieIndex) => {
         let sumValue = 0
         Object.entries(Columns).forEach(([columnName, columnInfo])=>{
-          sumValue += getMovieValue({value:movie[columnName], primaryKey: movie[primaryKey], columnName, columnInfo, savedSettings})
+          sumValue += getMovieValue({value:movie[columnName], primaryKey: movie[primaryKey], columnName, columnInfo, savedSettings, configuration})
           /* 
             To speed up:
             - don't do html for most of them
@@ -468,7 +528,10 @@ export default class List extends React.Component {
         stringifiedSettings,
         list,
       }
-      return list
+      return {
+        didChange: true, 
+        sortedList: list
+      };
     }
   }
   // shouldComponentUpdate (nextProps, nextState) {
@@ -481,67 +544,167 @@ export default class List extends React.Component {
   // }
   render() {
     console.time("render rows")
-    const {pageNumber, savedSettings, freezeListOrder, onlyUnsortedWatched} = this.state
+    const {pageNumber, savedSettings, freezeListOrder, onlyUnsortedWatched, onlyUnwatched, mostlyUnwatched} = this.state
+    const isPublicConfiguration = savedSettings.currentConfigurationId in publicConfigurations
+    const configuration = structuredClone(isPublicConfiguration ? publicConfigurations[savedSettings.currentConfigurationId] : savedSettings.configurations[savedSettings.currentConfigurationId])
+    configuration.columnWeights = {...DefaultSettings.columnWeights, ...configuration.columnWeights} // if they were missing any columns, add them in
+    if (mostlyUnwatched) {
+      configuration.columnWeights = {
+        ...configuration.columnWeights,
+        watched: structuredClone(mostlyUnwatchedColumnWeights),
+      }
+    }
+    const cleanseWatched = (dirtyConfiguration)=>{
+      if (mostlyUnwatched) {
+        if (JSON.stringify(dirtyConfiguration.columnWeights.watched)===JSON.stringify(mostlyUnwatchedColumnWeights)) {
+          const realConfiguration = structuredClone(isPublicConfiguration ? publicConfigurations[savedSettings.currentConfigurationId] : savedSettings.configurations[savedSettings.currentConfigurationId])
+          return {
+            ...dirtyConfiguration, 
+            columnWeights: {
+              ...dirtyConfiguration.columnWeights,
+              watched: realConfiguration.columnWeights.watched,
+            }
+          }
+        }
+      }
+      return dirtyConfiguration
+    }
+    const saveConfiguration = (configuration)=>this.saveSettings({configurations: {...savedSettings.configurations, [savedSettings.currentConfigurationId]: cleanseWatched(configuration)}})
     // const DISPLAYED_ROWS = PAGE_SIZE * (pageNumber+1)
-    const sortedList = this.sortMovies({movieData, savedSettings})
+    const {didChange, sortedList} = this.sortMovies({movieData, savedSettings, configuration})
+    if (didChange) {
+      this.setState({pageNumber: 0})
+    }
     console.timeEnd("render rows")
 
     return (
       <div className="container mt-5">
-        <h1>Movie Ratings</h1>
+        <style>
+          {`
+            :root {
+              --background-image: url('${background}');
+            }
+          `}
+        </style>
+        <img src={header} alt="CinemAlchemist" className="header-image" />
+        {
+        //   <header style={{ paddingLeft: 0 }}>
+        //   <div
+        //     className='p-5 text-center bg-image'
+        //     style={{ backgroundImage: `url(${logo})`, height: 400 }}
+        //     >
+        //     <div className='mask' style={{ backgroundColor: 'rgba(0, 0, 0, 0.3)' }}>
+        //       <div className='d-flex justify-content-center align-items-center h-100'>
+        //         <div className='text-white'>
+        //           <h1 className='mb-3'>CinemAlchemist</h1>
+        //           <h4 className='mb-3'>Transforming Movie Preferences into Gold</h4>
+        //           {/* <a className='btn btn-outline-light btn-lg' href='#column-weights' role='button'>
+        //             Start now
+        //           </a> */}
+        //         </div>
+        //       </div>
+        //     </div>
+        //   </div>
+        // </header>
+      }
+        <br/>
+        <br/>
         <p>
-          Instructions: Adjust the settings in these blue rectangles below, then press Save. 
-          View the recommended movies list at the bottom. 
-          You can enter what year you saw each movie. 
-          Then, these movies' scores will be lowered if you saw them recently. 
-          Your settings and Year Watched information will be saved to your browser.
+          Instructions: Adjust the settings in the Alchemy section below, then press Save. 
+          View the resulting Gold list at the bottom.
         </p>
-        <ColumnWeights columnWeights={savedSettings.columnWeights} saveSettings={this.saveSettings}/>
-        <h3>Movie List</h3>
-        <p>Instructions: If you want to keep track of when you have seen each movie, you will probably want to check both of the below boxes (Freeze List Order and Only Unsorted Watched) while inputting the Year Watched. 
-          Then, you can move quickly through the movies by typing your year number, then pressing TAB. 
-          Make sure to type 0 if you haven't seen the movie so it will remember that you haven't seen it, and not ask again.
+        <br />
+        <ColumnWeights 
+          configuration={configuration} 
+          saveConfiguration={saveConfiguration} 
+          copyConfiguration={configuration=>this.copyConfiguration(cleanseWatched(configuration))} 
+          deleteConfiguration={this.deleteConfiguration} 
+          isPublicConfiguration={isPublicConfiguration}
+        />
+        <div>
+          <span>My Configurations: </span>
+          {Object.entries(savedSettings.configurations).map(([id,conf])=>(
+            <button onClick={()=>this.saveSettings({currentConfigurationId: id})} style={savedSettings.currentConfigurationId===id ? {filter: "invert(100%)"} : {}}>{conf.displayName}</button>
+          ))}
+        </div>
+        <div>
+          <span>Public Configurations: </span>
+          {Object.entries(publicConfigurations).map(([id,conf])=>(
+            <button onClick={()=>this.saveSettings({currentConfigurationId: id})} style={savedSettings.currentConfigurationId===id ? {filter: "invert(100%)"} : {}}>{conf.displayName}</button>
+          ))}
+        </div>
+        <br />
+        <br />
+        <h3>Gold List</h3>
+        <p>Instructions: If you want to keep track of when you have seen each movie, check the first two boxes (Freeze List Order and Only Unsorted Watched) while inputting the Year Watched. 
+          {/* Then, you can move quickly through the movies by typing your year number, then pressing TAB. 
+          Make sure to type 0 if you haven't seen the movie so it will remember that you haven't seen it, and not ask again. */}
         </p>
         <div>
           <input type="checkbox" value={freezeListOrder} onChange={(e)=>this.setState({freezeListOrder: !freezeListOrder})} />
           <span>Freeze List Order</span>
         </div>
         <div>
-          <input type="checkbox" value={onlyUnsortedWatched} onChange={(e)=>this.setState({onlyUnsortedWatched: !onlyUnsortedWatched})} />
+          <input type="checkbox" value={onlyUnsortedWatched} onChange={(e)=>this.setState({onlyUnsortedWatched: !onlyUnsortedWatched, pageNumber: 0})} />
           <span>Only Unsorted Watched</span>
         </div>
-        <table className="table">
-          <thead className="sticky-top bg-light">
-            <tr>
-              {Object.entries(Columns).map(([columnName, columnInfo])=>{
-                return <th key={columnName}>{columnInfo.displayName}</th>
-              })}
-              <th>Score</th>
-            </tr>
-          </thead>
-          <tbody>
-            {(
-              onlyUnsortedWatched ? sortedList.filter(({movieIndex})=>isNaN(parseInt(savedSettings.movieSettings[movieData[movieIndex][primaryKey]]?.watched))) : sortedList
-            ).slice(PAGE_SIZE*pageNumber, PAGE_SIZE*(pageNumber+1)).map(({movieIndex, sumValue}) => (
-              <MovieRow key={movieIndex} movie={movieData[movieIndex]} sumValue={sumValue} savedSettings={savedSettings} saveSettings={this.saveSettings} />
-            ))}
-            <tr>
-              <td colSpan={100}>
-                <button disabled={pageNumber<=0} onClick={()=>this.setState({pageNumber: pageNumber-1})}>←</button>
-                <span>{pageNumber+1}</span>
-                <button disabled={(pageNumber+1)*PAGE_SIZE >= movieData.length} onClick={()=>this.setState({pageNumber: pageNumber+1})}>→</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        <p>Thanks to:</p>
-        <a href="https://www.kaggle.com/datasets/rounakbanik/the-movies-dataset">https://www.kaggle.com/datasets/rounakbanik/the-movies-dataset</a>, 
-        <a href="https://www.kaggle.com/datasets/ashirwadsangwan/imdb-dataset">https://www.kaggle.com/datasets/ashirwadsangwan/imdb-dataset</a>, 
-        <a href="https://www.kaggle.com/datasets/pushpakhinglaspure/oscar-dataset">https://www.kaggle.com/datasets/pushpakhinglaspure/oscar-dataset</a>, and
-        <a href="https://www.wikipedia.org/">https://www.wikipedia.org/</a>
-        {/* <a href="https://www.kaggle.com/datasets/andrezaza/clapper-massive-rotten-tomatoes-movies-and-reviews">https://www.kaggle.com/datasets/andrezaza/clapper-massive-rotten-tomatoes-movies-and-reviews</a>,  */}
-        {/* <a href="https://www.kaggle.com/datasets/unanimad/golden-globe-awards">https://www.kaggle.com/datasets/unanimad/golden-globe-awards</a>,  */}
-        {/* <a href="https://www.kaggle.com/datasets/unanimad/bafta-awards">https://www.kaggle.com/datasets/unanimad/bafta-awards</a> */}
+        <div>
+          <input type="checkbox" value={onlyUnwatched} onChange={(e)=>this.setState({onlyUnwatched: !onlyUnwatched, pageNumber: 0})} />
+          <span>Only Unwatched</span>
+        </div>
+        <div>
+          <input type="checkbox" value={mostlyUnwatched} onChange={(e)=>this.setState({mostlyUnwatched: !mostlyUnwatched, pageNumber: 0})} />
+          <span>Mostly Unwatched</span>
+        </div>
+        <div className="table-container">
+          <table className="table">
+            <thead className="sticky-top">
+              <tr>
+                {Object.entries(Columns).map(([columnName, columnInfo])=>{
+                  return <th key={columnName}>{columnInfo.displayName}</th>
+                })}
+                <th>Score</th>
+              </tr>
+            </thead>
+            <tbody>
+              {(
+                onlyUnsortedWatched ? sortedList.filter(({movieIndex})=>isNaN(parseInt(savedSettings.movieSettings[movieData[movieIndex][primaryKey]]?.watched))) :
+                onlyUnwatched ? sortedList.filter(({movieIndex})=>parseInt(savedSettings.movieSettings[movieData[movieIndex][primaryKey]]?.watched??0)===0) : 
+                sortedList
+              ).slice(PAGE_SIZE*pageNumber, PAGE_SIZE*(pageNumber+1)).map(({movieIndex, sumValue}) => (
+                <MovieRow key={movieIndex} movie={movieData[movieIndex]} sumValue={sumValue} savedSettings={savedSettings} saveSettings={this.saveSettings} configuration={configuration} />
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <br/>
+        <div>
+          <button disabled={pageNumber<=0} onClick={()=>this.setState({pageNumber: pageNumber-1})}>←</button>
+          <span>{pageNumber+1}</span>
+          <button disabled={(pageNumber+1)*PAGE_SIZE >= movieData.length} onClick={()=>this.setState({pageNumber: pageNumber+1})}>→</button>
+        </div>
+        <br/>
+        <br/>
+        <p>
+          Thanks to:
+          <br/>
+          <a href="https://www.kaggle.com/datasets/rounakbanik/the-movies-dataset">https://www.kaggle.com/datasets/rounakbanik/the-movies-dataset</a>,&nbsp;
+          <a href="https://www.kaggle.com/datasets/ashirwadsangwan/imdb-dataset">https://www.kaggle.com/datasets/ashirwadsangwan/imdb-dataset</a>,&nbsp;
+          <a href="https://www.kaggle.com/datasets/pushpakhinglaspure/oscar-dataset">https://www.kaggle.com/datasets/pushpakhinglaspure/oscar-dataset</a>, and&nbsp;
+          <a href="https://www.wikipedia.org/">https://www.wikipedia.org/</a>
+          {/* <a href="https://www.kaggle.com/datasets/andrezaza/clapper-massive-rotten-tomatoes-movies-and-reviews">https://www.kaggle.com/datasets/andrezaza/clapper-massive-rotten-tomatoes-movies-and-reviews</a>,  */}
+          {/* <a href="https://www.kaggle.com/datasets/unanimad/golden-globe-awards">https://www.kaggle.com/datasets/unanimad/golden-globe-awards</a>,  */}
+          {/* <a href="https://www.kaggle.com/datasets/unanimad/bafta-awards">https://www.kaggle.com/datasets/unanimad/bafta-awards</a> */}
+        </p>
+        <p>
+          Created by <a href="https://www.richardhenage.com">Richard Henage</a>
+        </p>
+        <p>
+          Also check out <a href="https://www.elderchicken.com/games">Elder Chicken Games</a>
+        </p>
+        <p>
+          &copy; {(new Date()).getFullYear()}
+        </p>
       </div>
     );
   }
@@ -551,31 +714,50 @@ class ColumnWeights extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-      columnWeights: props.columnWeights,
+      columnWeights: props.configuration.columnWeights,
+      displayName: props.configuration.displayName,
+    }
+  }
+
+  lastConfigurationProps
+  componentDidUpdate() {
+    const stringified = JSON.stringify(this.props.configuration)
+    if (stringified !== this.lastConfigurationProps) {
+      this.lastConfigurationProps = stringified
+      const {columnWeights, displayName} = this.props.configuration
+      this.setState({columnWeights, displayName})
     }
   }
 
   keyAddition = 0
   render() {
-    const {columnWeights} = this.state
+    const {columnWeights, displayName} = this.state
+    if (!columnWeights) {
+      return (<div>Loading configuration...</div>)
+    }
     const {keyAddition} = this
-    const saveSettings = ({columnWeights})=>{
+    const {copyConfiguration, deleteConfiguration, isPublicConfiguration} = this.props
+    const saveConfiguration = ({columnWeights, displayName})=>{
       Object.values(columnWeights).forEach(column=>column.forEach(columnWeight=>{
         columnWeight.breakpoint = !isNaN(parseFloat(columnWeight.breakpoint)) ? parseFloat(columnWeight.breakpoint) : columnWeight.breakpoint
         columnWeight.weight = parseFloat(columnWeight.weight)
       }))
-      this.props.saveSettings({columnWeights})
+      this.props.saveConfiguration({columnWeights, displayName})
     }
     return (<>
-      <h3>Column Weights</h3>
+      <h3 id="column-weights">Alchemy</h3>
       <p>Instructions: For each pair, the first number is the "breakpoint" and the second number is the "weight". 
-        The movie's score in each column is set by how close it is to the two closest breakpoints, and what their weights are.
+        {/* The movie's score in each column is set by how close it is to the two closest breakpoints, and what their weights are.
         You can add and remove breakpoints.
         If a movie's property falls outside the breakpoints, it is set exactly to the closest breakpoint.
         You can have a negative weight on a breakpoint if you want.
         For columns like Genre, you can add weights to each possible genre, positive or negative.
-        You must click Save for the settings to be applied.
+        You must click Save for the settings to be applied. */}
       </p>
+      <div>
+        <span>Name:</span>
+        <input type="text" value={displayName} onChange={(e)=>this.setState({displayName:e.target.value})} disabled={isPublicConfiguration} />
+      </div>
       {Object.entries(columnWeights).map(([columnName, weights])=>{
         const add = () => {
           const breakpoint = (
@@ -587,7 +769,7 @@ class ColumnWeights extends React.Component {
           this.setState({columnWeights})
         }
         return (
-          <div key={columnName} className="mb-2">
+          <div key={columnName} className="mb-2 border-bottom">
             <b className="me-5">{Columns[columnName].displayName}: </b>
             {weights.map(({breakpoint, weight}, index)=>{
               const update = (updates) => {
@@ -601,7 +783,7 @@ class ColumnWeights extends React.Component {
                 this.setState({columnWeights})
               }
               return (
-                <span key={index+"_"+keyAddition} className="p-2 me-4 bg-info d-inline-block">
+                <span key={index+"_"+keyAddition} className="p-2 me-4 d-inline-block">
                   {Columns[columnName].subType==="enum" ? (
                     <select style={{width:"120px"}} value={breakpoint} onChange={(e)=>update({breakpoint: e.target.value})}>
                       {Object.entries(Columns[columnName].values).sort(([aKey,aVal],[bKey,bVal])=>bVal-aVal).map(([key,val])=>(
@@ -620,8 +802,13 @@ class ColumnWeights extends React.Component {
           </div>
         )
       })}
+      <button onClick={()=>saveConfiguration({columnWeights, displayName})} disabled={isPublicConfiguration}>Save</button>
+      <button onClick={()=>copyConfiguration({columnWeights, displayName})}>Copy</button>
+      {!isPublicConfiguration && (
+        <DeleteButton onClick={()=>deleteConfiguration()} buttonText="Delete"/>
+      )}
       <br />
-      <button onClick={()=>saveSettings({columnWeights})}>Save</button>
+      <br />
     </>)
   }
 }
@@ -635,7 +822,7 @@ class MovieRow extends React.Component {
   }
 
   render () {
-    const {movie, savedSettings, saveSettings, sumValue} = this.props
+    const {movie, savedSettings, saveSettings, configuration, sumValue} = this.props
     const thisMovieSettings = {...(savedSettings.movieSettings[movie[primaryKey]] || {}), ...this.state.overrideThisMovieSettings}
     const updateThisMovieSettings = (changes)=>{
       this.setState({overrideThisMovieSettings: {...this.state.overrideThisMovieSettings, ...changes}})
@@ -651,7 +838,7 @@ class MovieRow extends React.Component {
             - don't do html for most of them
             - better sorting? maybe first check if they are better than the 25th best one.
           */
-          const thisValue = getMovieValue({value: movie[columnName], primaryKey: movie[primaryKey], columnName, columnInfo, savedSettings})
+          const thisValue = getMovieValue({value: movie[columnName], primaryKey: movie[primaryKey], columnName, columnInfo, savedSettings, configuration})
           let displayVal
           if (columnInfo.inPersonalSettings) {
             // they can change the input in this row
@@ -687,7 +874,7 @@ class MovieRow extends React.Component {
           if (!sumValue?.toFixed) {
             console.log(`sumValue:`, sumValue, typeof sumValue)
           }
-          return <td key={columnName}>
+          return <td key={columnName} style={columnInfo.bold ? {fontWeight: "bold"} : {}}>
             <span>{displayVal}</span>
             {columnInfo.weighable && (<>
               <br/>
@@ -701,24 +888,24 @@ class MovieRow extends React.Component {
   }
 }
 
-const getMovieValue = ({value, primaryKey, columnName, columnInfo, savedSettings})=>{
+const getMovieValue = ({value, primaryKey, columnName, columnInfo, savedSettings, configuration})=>{
   if (columnInfo.inPersonalSettings) {
     value = savedSettings.movieSettings[primaryKey]?.[columnName]
   }
 
   let thisValue
   if (!columnInfo.weighable) return 0;
-  const weights = savedSettings.columnWeights[columnName]
+  const weights = configuration.columnWeights[columnName]
   if (!weights.length) {
     thisValue = 0
   } else if (columnInfo.type==="string") {
-    thisValue = weights.find(weight=>weight.breakpoint===value)?.weight || 0
+    thisValue = parseFloat(weights.find(weight=>weight.breakpoint===value)?.weight) || 0
   } else if (columnInfo.type==="list") {
     thisValue = 0
     const entries = parseJSONArraySafe(value)
     weights.forEach(weight=>{
       if (entries.find(entry=>entry.name===weight.breakpoint)) {
-        thisValue += weight.weight
+        thisValue += parseFloat(weight.weight)
       }
     })
   } else if (columnInfo.type==="number") {
@@ -734,15 +921,15 @@ const getMovieValue = ({value, primaryKey, columnName, columnInfo, savedSettings
     })
     if (lowerWeight && higherWeight) {
       if (lowerWeight.weight===higherWeight.weight) {
-        thisValue = lowerWeight.weight // it doesn't matter which one
+        thisValue = parseFloat(lowerWeight.weight) // it doesn't matter which one
       } else {
         const percentHigh = ((parseFloat(value)??0) - lowerWeight.breakpoint) / (higherWeight.breakpoint - lowerWeight.breakpoint)
-        thisValue = (higherWeight.weight * percentHigh) + (lowerWeight.weight * (1-percentHigh))
+        thisValue = (parseFloat(higherWeight.weight) * percentHigh) + (parseFloat(lowerWeight.weight) * (1-percentHigh))
       }
     } else if (lowerWeight) {
-      thisValue = lowerWeight.weight
+      thisValue = parseFloat(lowerWeight.weight)
     } else if (higherWeight) {
-      thisValue = higherWeight.weight
+      thisValue = parseFloat(higherWeight.weight)
     } else {
       thisValue = 0
     }
@@ -756,4 +943,80 @@ const getMovieValue = ({value, primaryKey, columnName, columnInfo, savedSettings
     // }
   }
   return thisValue || 0
+}
+
+
+
+export class DeleteButton extends React.Component {
+  // a delete button with a confirmation message
+  constructor(props) {
+      super(props)
+      this.state = {
+          needsConfirmation: false
+      }
+  }
+  confirmationTimeout = undefined
+  render() { try {
+      const {needsConfirmation} = this.state
+      const {
+        onClick:propsOnClick = ()=>{}, 
+        size = "tiny", 
+        className:propsClassName = undefined, 
+        containerClassName = "", 
+        tooltipDirection = "left", 
+        tooltipText = undefined, 
+        buttonType = "text", 
+        buttonText = "Delete", 
+        confirmationMessage = "confirm delete?"
+      } = this.props
+      const className = propsClassName ?? ""//`${size}-icon blue-bg deleteButton`
+      const onClick = (e) => {
+          e.stopPropagation()
+          if (needsConfirmation) {
+              clearTimeout(this.confirmationTimeout)
+              this.setState({needsConfirmation: false})
+              propsOnClick()
+          } else {
+              this.setState({needsConfirmation: true})
+              this.confirmationTimeout = setTimeout(() => {
+                  this.setState({needsConfirmation: false})
+              }, 3000)
+          }
+      }
+      let button;
+      if (needsConfirmation) {
+          button  = (
+              <button
+                  className="text-white bg-danger"
+                  onClick={onClick}
+              >{confirmationMessage}</button>)
+      // } else if (buttonType === "icon") {
+      //     button  = (
+      //         <img 
+      //             src={imagefolder+"/delete-icon-light.svg"} 
+      //             alt="delete" 
+      //             className={className}
+      //             onClick={onClick}
+      //         /> )
+      } else {
+          button  = (
+              <button
+                  className={className}
+                  onClick={onClick}
+              >{buttonText}</button>)
+      }
+      if (tooltipText) {
+          return (
+              <div className={"tooltip-container front-hover " + containerClassName}>
+                  {button}
+                  <div className={`${tooltipDirection} tooltip`}>{tooltipText}</div>
+              </div> 
+          )
+      } else {
+          return button
+      }
+  } catch (e) {
+      console.error(e)
+      return (<div>An error has occurred.</div>)
+  }}
 }

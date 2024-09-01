@@ -1,0 +1,539 @@
+{
+  "richard": {
+    "displayName": "Richard's Pick",
+    "columnWeights": {
+      "release_date": [
+        {"breakpoint": 1900, "weight": -3},
+        {"breakpoint": 2000, "weight": 3}
+      ],
+      "watched": [],
+      "runtime": [],
+      "genres": [
+        {"breakpoint": "Western", "weight": 1},
+        {"breakpoint": "Horror", "weight": 2},
+        {"breakpoint": "Crime", "weight": 1},
+        {"breakpoint": "Animation", "weight": 2},
+        {"breakpoint": "Adventure", "weight": 1}
+      ],
+      "vote_average": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 10, "weight": 0.5}
+      ],
+      "vote_count": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 15000, "weight": 0.5}
+      ],
+      "vote_average_imdb": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 10, "weight": 10}
+      ],
+      "vote_count_imdb": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 300000, "weight": 4},
+        {"breakpoint": 3000000, "weight": 6}
+      ],
+      "oscar_wins": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 1, "weight": 3},
+        {"breakpoint": 10, "weight": 5}
+      ],
+      "oscar_nominations": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 3, "weight": 3},
+        {"breakpoint": 15, "weight": 5}
+      ],
+      "nfr_induction_year": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 1900, "weight": 3}
+      ],
+      "afi_rank": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 1, "weight": 8},
+        {"breakpoint": 10, "weight": 5},
+        {"breakpoint": 100, "weight": 3}
+      ],
+      "afi_animation_rank": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 1, "weight": 1},
+        {"breakpoint": 2, "weight": 0.5},
+        {"breakpoint": 10, "weight": 0.1}
+      ],
+      "afi_courtroom_drama_rank": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 1, "weight": 1},
+        {"breakpoint": 2, "weight": 0.5},
+        {"breakpoint": 10, "weight": 0.1}
+      ],
+      "afi_epic_rank": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 1, "weight": 1},
+        {"breakpoint": 2, "weight": 0.5},
+        {"breakpoint": 10, "weight": 0.1}
+      ],
+      "afi_fantasy_rank": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 1, "weight": 1},
+        {"breakpoint": 2, "weight": 0.5},
+        {"breakpoint": 10, "weight": 0.1}
+      ],
+      "afi_gangster_rank": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 1, "weight": 1},
+        {"breakpoint": 2, "weight": 0.5},
+        {"breakpoint": 10, "weight": 0.1}
+      ],
+      "afi_mystery_rank": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 1, "weight": 1},
+        {"breakpoint": 2, "weight": 0.5},
+        {"breakpoint": 10, "weight": 0.1}
+      ],
+      "afi_romantic_comedy_rank": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 1, "weight": 1},
+        {"breakpoint": 2, "weight": 0.5},
+        {"breakpoint": 10, "weight": 0.1}
+      ],
+      "afi_science_fiction_rank": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 1, "weight": 1},
+        {"breakpoint": 2, "weight": 0.5},
+        {"breakpoint": 10, "weight": 0.1}
+      ],
+      "afi_sports_rank": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 1, "weight": 1},
+        {"breakpoint": 2, "weight": 0.5},
+        {"breakpoint": 10, "weight": 0.1}
+      ],
+      "afi_western_rank": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 1, "weight": 1},
+        {"breakpoint": 2, "weight": 0.5},
+        {"breakpoint": 10, "weight": 0.1}
+      ],
+      "afi_musicals_rank": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 1, "weight": 1},
+        {"breakpoint": 3, "weight": 0.5},
+        {"breakpoint": 25, "weight": 0.1}
+      ],
+      "afi_scores_rank": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 1, "weight": 1},
+        {"breakpoint": 3, "weight": 0.5},
+        {"breakpoint": 25, "weight": 0.1}
+      ],
+      "afi_heroes_rank": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 1, "weight": 0.4},
+        {"breakpoint": 5, "weight": 0.2},
+        {"breakpoint": 50, "weight": 0.05}
+      ],
+      "afi_villains_rank": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 1, "weight": 0.4},
+        {"breakpoint": 5, "weight": 0.2},
+        {"breakpoint": 50, "weight": 0.05}
+      ],
+      "afi_cheers_rank": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 1, "weight": 1},
+        {"breakpoint": 10, "weight": 0.5},
+        {"breakpoint": 100, "weight": 0.1}
+      ],
+      "afi_laughs_rank": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 1, "weight": 1},
+        {"breakpoint": 10, "weight": 0.5},
+        {"breakpoint": 100, "weight": 0.1}
+      ],
+      "afi_passions_rank": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 1, "weight": 1},
+        {"breakpoint": 10, "weight": 0.5},
+        {"breakpoint": 100, "weight": 0.1}
+      ],
+      "afi_quotes_rank": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 1, "weight": 0.4},
+        {"breakpoint": 10, "weight": 0.2},
+        {"breakpoint": 100, "weight": 0.05}
+      ],
+      "afi_songs_rank": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 1, "weight": 0.4},
+        {"breakpoint": 10, "weight": 0.2},
+        {"breakpoint": 100, "weight": 0.05}
+      ],
+      "afi_thrills_rank": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 1, "weight": 1},
+        {"breakpoint": 10, "weight": 0.5},
+        {"breakpoint": 100, "weight": 0.1}
+      ],
+      "budget": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 400000000, "weight": 5}
+      ],
+      "revenue": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 3000000000, "weight": 5}
+      ],
+      "original_language": [
+        {"breakpoint": "en", "weight": 3}
+      ],
+      "production_companies": [],
+      "production_countries": []
+    }
+  },
+  "criticsAndAwards": {
+    "displayName": "Critics & Awards",
+    "columnWeights": {
+      "release_date": [],
+      "watched": [],
+      "runtime": [],
+      "genres": [],
+      "vote_average": [],
+      "vote_count": [],
+      "vote_average_imdb": [
+        {"breakpoint": 1, "weight": -3},
+        {"breakpoint": 10, "weight": 2}
+      ],
+      "vote_count_imdb": [],
+      "oscar_wins": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 1, "weight": 2},
+        {"breakpoint": 11, "weight": 10}
+      ],
+      "oscar_nominations": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 1, "weight": 1},
+        {"breakpoint": 16, "weight": 5}
+      ],
+      "nfr_induction_year": [],
+      "afi_rank": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 1, "weight": 8},
+        {"breakpoint": 10, "weight": 5},
+        {"breakpoint": 100, "weight": 3}
+      ],
+      "afi_animation_rank": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 1, "weight": 1},
+        {"breakpoint": 2, "weight": 0.5},
+        {"breakpoint": 10, "weight": 0.1}
+      ],
+      "afi_courtroom_drama_rank": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 1, "weight": 1},
+        {"breakpoint": 2, "weight": 0.5},
+        {"breakpoint": 10, "weight": 0.1}
+      ],
+      "afi_epic_rank": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 1, "weight": 1},
+        {"breakpoint": 2, "weight": 0.5},
+        {"breakpoint": 10, "weight": 0.1}
+      ],
+      "afi_fantasy_rank": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 1, "weight": 1},
+        {"breakpoint": 2, "weight": 0.5},
+        {"breakpoint": 10, "weight": 0.1}
+      ],
+      "afi_gangster_rank": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 1, "weight": 1},
+        {"breakpoint": 2, "weight": 0.5},
+        {"breakpoint": 10, "weight": 0.1}
+      ],
+      "afi_mystery_rank": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 1, "weight": 1},
+        {"breakpoint": 2, "weight": 0.5},
+        {"breakpoint": 10, "weight": 0.1}
+      ],
+      "afi_romantic_comedy_rank": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 1, "weight": 1},
+        {"breakpoint": 2, "weight": 0.5},
+        {"breakpoint": 10, "weight": 0.1}
+      ],
+      "afi_science_fiction_rank": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 1, "weight": 1},
+        {"breakpoint": 2, "weight": 0.5},
+        {"breakpoint": 10, "weight": 0.1}
+      ],
+      "afi_sports_rank": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 1, "weight": 1},
+        {"breakpoint": 2, "weight": 0.5},
+        {"breakpoint": 10, "weight": 0.1}
+      ],
+      "afi_western_rank": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 1, "weight": 1},
+        {"breakpoint": 2, "weight": 0.5},
+        {"breakpoint": 10, "weight": 0.1}
+      ],
+      "afi_musicals_rank": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 1, "weight": 1},
+        {"breakpoint": 3, "weight": 0.5},
+        {"breakpoint": 25, "weight": 0.1}
+      ],
+      "afi_scores_rank": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 1, "weight": 1},
+        {"breakpoint": 3, "weight": 0.5},
+        {"breakpoint": 25, "weight": 0.1}
+      ],
+      "afi_heroes_rank": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 1, "weight": 0.4},
+        {"breakpoint": 5, "weight": 0.2},
+        {"breakpoint": 50, "weight": 0.05}
+      ],
+      "afi_villains_rank": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 1, "weight": 0.4},
+        {"breakpoint": 5, "weight": 0.2},
+        {"breakpoint": 50, "weight": 0.05}
+      ],
+      "afi_cheers_rank": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 1, "weight": 1},
+        {"breakpoint": 10, "weight": 0.5},
+        {"breakpoint": 100, "weight": 0.1}
+      ],
+      "afi_laughs_rank": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 1, "weight": 1},
+        {"breakpoint": 10, "weight": 0.5},
+        {"breakpoint": 100, "weight": 0.1}
+      ],
+      "afi_passions_rank": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 1, "weight": 1},
+        {"breakpoint": 10, "weight": 0.5},
+        {"breakpoint": 100, "weight": 0.1}
+      ],
+      "afi_quotes_rank": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 1, "weight": 0.4},
+        {"breakpoint": 10, "weight": 0.2},
+        {"breakpoint": 100, "weight": 0.05}
+      ],
+      "afi_songs_rank": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 1, "weight": 0.4},
+        {"breakpoint": 10, "weight": 0.2},
+        {"breakpoint": 100, "weight": 0.05}
+      ],
+      "afi_thrills_rank": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 1, "weight": 1},
+        {"breakpoint": 10, "weight": 0.5},
+        {"breakpoint": 100, "weight": 0.1}
+      ],
+      "budget": [],
+      "revenue": [],
+      "original_language": [],
+      "production_companies": [],
+      "production_countries": []
+    }
+  },
+  "blockbusters": {
+    "displayName": "Blockbusters",
+    "columnWeights": {
+      "release_date": [],
+      "watched": [],
+      "runtime": [],
+      "genres": [],
+      "vote_average": [],
+      "vote_count": [],
+      "vote_average_imdb": [],
+      "vote_count_imdb": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 100000, "weight": 2},
+        {"breakpoint": 3000000, "weight": 5}
+      ],
+      "oscar_wins": [],
+      "oscar_nominations": [],
+      "nfr_induction_year": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 1900, "weight": 2}
+      ],
+      "afi_rank": [],
+      "afi_animation_rank": [],
+      "afi_courtroom_drama_rank": [],
+      "afi_epic_rank": [],
+      "afi_fantasy_rank": [],
+      "afi_gangster_rank": [],
+      "afi_mystery_rank": [],
+      "afi_romantic_comedy_rank": [],
+      "afi_science_fiction_rank": [],
+      "afi_sports_rank": [],
+      "afi_western_rank": [],
+      "afi_musicals_rank": [],
+      "afi_scores_rank": [],
+      "afi_heroes_rank": [],
+      "afi_villains_rank": [],
+      "afi_cheers_rank": [],
+      "afi_laughs_rank": [],
+      "afi_passions_rank": [],
+      "afi_quotes_rank": [],
+      "afi_songs_rank": [],
+      "afi_thrills_rank": [],
+      "budget": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 100000, "weight": 2},
+        {"breakpoint": 3000000, "weight": 5}
+      ],
+      "revenue": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 100000000, "weight": 10},
+        {"breakpoint": 3000000000, "weight": 20}
+      ],
+      "original_language": [],
+      "production_companies": [],
+      "production_countries": []
+    }
+  },
+  "highlyRated": {
+    "displayName": "Highly-Rated",
+    "columnWeights": {
+      "release_date": [],
+      "watched": [],
+      "runtime": [],
+      "genres": [],
+      "vote_average": [],
+      "vote_count": [],
+      "vote_average_imdb": [
+        {"breakpoint": 1, "weight": 0},
+        {"breakpoint": 10, "weight": 20}
+      ],
+      "vote_count_imdb": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 100000, "weight": 2},
+        {"breakpoint": 3000000, "weight": 3}
+      ],
+      "oscar_wins": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 1, "weight": 1},
+        {"breakpoint": 10, "weight": 2}
+      ],
+      "oscar_nominations": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 1, "weight": 1},
+        {"breakpoint": 15, "weight": 2}
+      ],
+      "nfr_induction_year": [],
+      "afi_rank": [],
+      "afi_animation_rank": [],
+      "afi_courtroom_drama_rank": [],
+      "afi_epic_rank": [],
+      "afi_fantasy_rank": [],
+      "afi_gangster_rank": [],
+      "afi_mystery_rank": [],
+      "afi_romantic_comedy_rank": [],
+      "afi_science_fiction_rank": [],
+      "afi_sports_rank": [],
+      "afi_western_rank": [],
+      "afi_musicals_rank": [],
+      "afi_scores_rank": [],
+      "afi_heroes_rank": [],
+      "afi_villains_rank": [],
+      "afi_cheers_rank": [],
+      "afi_laughs_rank": [],
+      "afi_passions_rank": [],
+      "afi_quotes_rank": [],
+      "afi_songs_rank": [],
+      "afi_thrills_rank": [],
+      "budget": [],
+      "revenue": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 30000000, "weight": 1},
+        {"breakpoint": 3000000000, "weight": 2}
+      ],
+      "original_language": [],
+      "production_companies": [],
+      "production_countries": []
+    }
+  },
+  "classics": {
+    "displayName": "Classics",
+    "columnWeights": {
+      "release_date": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 1959, "weight": 0},
+        {"breakpoint": 1969, "weight": -8},
+        {"breakpoint": 1979, "weight": -250}
+      ],
+      "watched": [],
+      "runtime": [],
+      "genres": [],
+      "vote_average": [],
+      "vote_count": [],
+      "vote_average_imdb": [
+        {"breakpoint": 1, "weight": 0},
+        {"breakpoint": 10, "weight": 20}
+      ],
+      "vote_count_imdb": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 10000, "weight": 2},
+        {"breakpoint": 100000, "weight": 3}
+      ],
+      "oscar_wins": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 1, "weight": 1},
+        {"breakpoint": 10, "weight": 2}
+      ],
+      "oscar_nominations": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 1, "weight": 1},
+        {"breakpoint": 15, "weight": 2}
+      ],
+      "nfr_induction_year": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 1900, "weight": 3}
+      ],
+      "afi_rank": [
+        {"breakpoint": 1, "weight": 5},
+        {"breakpoint": 10, "weight": 3},
+        {"breakpoint": 100, "weight": 2}
+      ],
+      "afi_animation_rank": [],
+      "afi_courtroom_drama_rank": [],
+      "afi_epic_rank": [],
+      "afi_fantasy_rank": [],
+      "afi_gangster_rank": [],
+      "afi_mystery_rank": [],
+      "afi_romantic_comedy_rank": [],
+      "afi_science_fiction_rank": [],
+      "afi_sports_rank": [],
+      "afi_western_rank": [],
+      "afi_musicals_rank": [],
+      "afi_scores_rank": [],
+      "afi_heroes_rank": [],
+      "afi_villains_rank": [],
+      "afi_cheers_rank": [],
+      "afi_laughs_rank": [],
+      "afi_passions_rank": [],
+      "afi_quotes_rank": [],
+      "afi_songs_rank": [],
+      "afi_thrills_rank": [],
+      "budget": [],
+      "revenue": [
+        {"breakpoint": 0, "weight": 0},
+        {"breakpoint": 3000000, "weight": 2},
+        {"breakpoint": 300000000, "weight": 4}
+      ],
+      "original_language": [],
+      "production_companies": [],
+      "production_countries": []
+    }
+  }
+}
