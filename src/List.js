@@ -108,7 +108,7 @@ const Columns = {
     ],
   },
   watched: {
-    displayName: 'Watched',
+    displayName: 'Watched Year (or 0)',
     quantifiable: false,
     weighable: true,
     inPersonalSettings: true,
@@ -489,7 +489,19 @@ export default class List extends React.Component {
     return (
       <div className="container mt-5">
         <h1>Movie Ratings</h1>
+        <p>
+          Instructions: Adjust the settings in these blue rectangles below, then press Save. 
+          View the recommended movies list at the bottom. 
+          You can enter what year you saw each movie. 
+          Then, these movies' scores will be lowered if you saw them recently. 
+          Your settings and Year Watched information will be saved to your browser.
+        </p>
         <ColumnWeights columnWeights={savedSettings.columnWeights} saveSettings={this.saveSettings}/>
+        <h3>Movie List</h3>
+        <p>Instructions: If you want to keep track of when you have seen each movie, you will probably want to check both of the below boxes (Freeze List Order and Only Unsorted Watched) while inputting the Year Watched. 
+          Then, you can move quickly through the movies by typing your year number, then pressing TAB. 
+          Make sure to type 0 if you haven't seen the movie so it will remember that you haven't seen it, and not ask again.
+        </p>
         <div>
           <input type="checkbox" value={freezeListOrder} onChange={(e)=>this.setState({freezeListOrder: !freezeListOrder})} />
           <span>Freeze List Order</span>
@@ -525,9 +537,11 @@ export default class List extends React.Component {
         <p>Thanks to:</p>
         <a href="https://www.kaggle.com/datasets/rounakbanik/the-movies-dataset">https://www.kaggle.com/datasets/rounakbanik/the-movies-dataset</a>, 
         <a href="https://www.kaggle.com/datasets/ashirwadsangwan/imdb-dataset">https://www.kaggle.com/datasets/ashirwadsangwan/imdb-dataset</a>, 
-        <a href="https://www.kaggle.com/datasets/andrezaza/clapper-massive-rotten-tomatoes-movies-and-reviews">https://www.kaggle.com/datasets/andrezaza/clapper-massive-rotten-tomatoes-movies-and-reviews</a>, 
-        <a href="https://www.kaggle.com/datasets/unanimad/golden-globe-awards">https://www.kaggle.com/datasets/unanimad/golden-globe-awards</a>, 
-        <a href="https://www.kaggle.com/datasets/unanimad/bafta-awards">https://www.kaggle.com/datasets/unanimad/bafta-awards</a>
+        <a href="https://www.kaggle.com/datasets/pushpakhinglaspure/oscar-dataset">https://www.kaggle.com/datasets/pushpakhinglaspure/oscar-dataset</a>, and
+        <a href="https://www.wikipedia.org/">https://www.wikipedia.org/</a>
+        {/* <a href="https://www.kaggle.com/datasets/andrezaza/clapper-massive-rotten-tomatoes-movies-and-reviews">https://www.kaggle.com/datasets/andrezaza/clapper-massive-rotten-tomatoes-movies-and-reviews</a>,  */}
+        {/* <a href="https://www.kaggle.com/datasets/unanimad/golden-globe-awards">https://www.kaggle.com/datasets/unanimad/golden-globe-awards</a>,  */}
+        {/* <a href="https://www.kaggle.com/datasets/unanimad/bafta-awards">https://www.kaggle.com/datasets/unanimad/bafta-awards</a> */}
       </div>
     );
   }
@@ -553,6 +567,15 @@ class ColumnWeights extends React.Component {
       this.props.saveSettings({columnWeights})
     }
     return (<>
+      <h3>Column Weights</h3>
+      <p>Instructions: For each pair, the first number is the "breakpoint" and the second number is the "weight". 
+        The movie's score in each column is set by how close it is to the two closest breakpoints, and what their weights are.
+        You can add and remove breakpoints.
+        If a movie's property falls outside the breakpoints, it is set exactly to the closest breakpoint.
+        You can have a negative weight on a breakpoint if you want.
+        For columns like Genre, you can add weights to each possible genre, positive or negative.
+        You must click Save for the settings to be applied.
+      </p>
       {Object.entries(columnWeights).map(([columnName, weights])=>{
         const add = () => {
           const breakpoint = (

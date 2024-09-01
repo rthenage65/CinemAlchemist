@@ -9,13 +9,5 @@ How to integrate? First: what are the parameters, how much data are we talking a
 - May need to redo some of this with a more recent dataset
 
 
-Important Missed Oscars: Il Postino, Birdman, Bram Stoker's Dracula, Thelma and Louise, My Left Foot, Seventh Heaven, Original All Quiet On the Western Front, Bad Girl, The Big House, Cavalcade, The Champ, Cimarron, The Divorcee, A Farewell to Arms, 8 1/2, In Old Arizona, The Patriot, Skippy, Sunrise, Wings, 
-
-
-Next most important: American Film Institute, and Library of Congress
-
-TODO: fix multiple quotes
-TODO: fix multiple songs
-
-TODO: add Oscars dataset to Thank You's
-TODO: add Wikipedia to Thank You's
+Notes on process-csv file:
+I used papaparse to process the data into json, then I had this combineJSON function that would search for movies based on their imdb_id or based on title (replacing anything that wasn't a letter or space with "", and changing ampersands into "and") and year (plus or minus a year). It would console.log if it couldn't find a match, and I would look through the results and manually add in the important ones. If there were multiple matches, it would take the one with more votes on IMdB. 
