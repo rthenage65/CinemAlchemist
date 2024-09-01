@@ -1,0 +1,19 @@
+- Be able to click on a movie and see the description and poster
+- Be able to hide columns
+- Awards
+- * Oscars
+- * BAFTA
+- * Golden Globe
+- Critics vote
+- Platform?
+- Images?
+- Various lists:
+- * IMDB top 250
+- * All AFI lists
+- * National Film Registry
+- * Best writing, etc
+- * Roger Ebert favorites
+- Age rating
+- Cast and Crew lists
+- More rating platforms?
+- * Rotten Tomatoes

@@ -1,0 +1,21 @@
+Two main problems right now:
+- How to integrate all of the different datasheets?
+- Do I want to make this profitable?
+
+Being profitable will take too much time right now and may have too much of a quality drop. I'll skip it for now. I can probably convert everything over later if I want to.
+
+How to integrate? First: what are the parameters, how much data are we talking about?
+- Golden Globe, BAFTA, and Oscars give out limited numbers of awards, so it might be possible to do those manually, but Rotten Tomatoes would be hard. I might be able to skip Rotten Tomatoes, though. But I should really build a tool that integrates these for scalability. One way to do this would be to match the title and year against other movies to try to find the right one.
+- May need to redo some of this with a more recent dataset
+
+
+Important Missed Oscars: Il Postino, Birdman, Bram Stoker's Dracula, Thelma and Louise, My Left Foot, Seventh Heaven, Original All Quiet On the Western Front, Bad Girl, The Big House, Cavalcade, The Champ, Cimarron, The Divorcee, A Farewell to Arms, 8 1/2, In Old Arizona, The Patriot, Skippy, Sunrise, Wings, 
+
+
+Next most important: American Film Institute, and Library of Congress
+
+TODO: fix multiple quotes
+TODO: fix multiple songs
+
+TODO: add Oscars dataset to Thank You's
+TODO: add Wikipedia to Thank You's
