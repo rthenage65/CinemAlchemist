@@ -13,6 +13,7 @@
 
 # data
 /pre_react_stuff/data
+/src/data/movies_metadata_full.json
 
 # misc
 .DS_Store
