@@ -1,0 +1,12 @@
+{
+  "files": {
+    "main.js": "/CinemAlchemist/static/js/main.216d6399.js",
+    "static/media/cinemalchemist-spilling-gold.webp": "/CinemAlchemist/static/media/cinemalchemist-spilling-gold.67a9ead59b58eb66a90a.webp",
+    "static/media/cinemalchemist-text.webp": "/CinemAlchemist/static/media/cinemalchemist-text.9ed0e719b08d05f5e8c1.webp",
+    "index.html": "/CinemAlchemist/index.html",
+    "main.216d6399.js.map": "/CinemAlchemist/static/js/main.216d6399.js.map"
+  },
+  "entrypoints": [
+    "static/js/main.216d6399.js"
+  ]
+}

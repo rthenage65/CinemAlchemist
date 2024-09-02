@@ -1,0 +1,73 @@
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech&display=swap');
+
+:root {
+  --background-image: url("");
+}
+
+body {
+  background: linear-gradient(#dddddd88, #dddddd88), center / cover var(--background-image) no-repeat;
+}
+
+#background-cover {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  backdrop-filter: blur(10px);
+  z-index: 0;
+}
+
+#root {
+  position: relative;
+}
+
+.header-image {
+  max-width: 100%;
+}
+
+.table-container {
+  max-width: 100%;
+  /* overflow-x: scroll; */
+}
+
+thead {
+  background-color: #e6c27a;
+  /* backdrop-filter: blur(20px); */
+}
+
+/* .mask {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-attachment: fixed;
+}
+
+.bg-image {
+  position: relative;
+  overflow: hidden;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: 50%;
+}
+
+.rounded-3 {
+  border-radius: var(--mdb-border-radius-lg) !important;
+}
+
+header h1 {
+  font-family: "Share Tech", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+@media only screen and (min-width: 800px) {
+  header h1 {
+    font-size: 100px;
+  }
+} */
