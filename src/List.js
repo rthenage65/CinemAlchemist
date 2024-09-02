@@ -437,6 +437,7 @@ export default class List extends React.Component {
   copyConfiguration=(configuration)=>{
     const newId = crypto.randomUUID()
     let newDisplayName = configuration.displayName
+    const displayMatch = conf=>conf.displayName===newDisplayName
     do {
       const number = / \d+$/.exec(newDisplayName)?.[0]
       if (number) {
@@ -444,7 +445,7 @@ export default class List extends React.Component {
       } else {
         newDisplayName = newDisplayName + " 2"
       }
-    } while (Object.values({...publicConfigurations, ...this.state.savedSettings.configurations}).find(conf=>conf.displayName===newDisplayName))
+    } while (Object.values({...publicConfigurations, ...this.state.savedSettings.configurations}).find(displayMatch))
     this.saveSettings({
       configurations: {...this.state.savedSettings.configurations, [newId]: {
         columnWeights: structuredClone(configuration.columnWeights), 
@@ -611,7 +612,7 @@ export default class List extends React.Component {
         <br/>
         <p>
           Instructions: Adjust the settings in the Alchemy section below, then press Save. 
-          View the resulting Gold list at the bottom.
+          View the resulting Gold List at the bottom.
         </p>
         <br />
         <ColumnWeights 
@@ -758,50 +759,58 @@ class ColumnWeights extends React.Component {
         <span>Name:</span>
         <input type="text" value={displayName} onChange={(e)=>this.setState({displayName:e.target.value})} disabled={isPublicConfiguration} />
       </div>
-      {Object.entries(columnWeights).map(([columnName, weights])=>{
-        const add = () => {
-          const breakpoint = (
-            Columns[columnName].type==="number" ? Columns[columnName].maxValue :
-            Object.keys(Columns[columnName].values??{})[0]??"Target"
-          )
-          columnWeights[columnName].push({breakpoint, weight: 3})
-          this.keyAddition++
-          this.setState({columnWeights})
-        }
-        return (
-          <div key={columnName} className="mb-2 border-bottom">
-            <b className="me-5">{Columns[columnName].displayName}: </b>
-            {weights.map(({breakpoint, weight}, index)=>{
-              const update = (updates) => {
-                const prevData = columnWeights[columnName][index]
-                columnWeights[columnName][index] = {...prevData, ...updates}
-                this.setState({columnWeights})
-              }
-              const remove = () => {
-                columnWeights[columnName].splice(index, 1)
-                this.keyAddition++
-                this.setState({columnWeights})
-              }
-              return (
-                <span key={index+"_"+keyAddition} className="p-2 me-4 d-inline-block">
-                  {Columns[columnName].subType==="enum" ? (
-                    <select style={{width:"120px"}} value={breakpoint} onChange={(e)=>update({breakpoint: e.target.value})}>
-                      {Object.entries(Columns[columnName].values).sort(([aKey,aVal],[bKey,bVal])=>bVal-aVal).map(([key,val])=>(
-                        <option key={key} value={key}>{key}</option>
-                      ))}
-                    </select>
-                  ) : (
-                    <input style={{width:"120px"}} type={Columns[columnName].type==="number" ? "number" : "text"} value={breakpoint} onChange={(e)=>update({breakpoint: Columns[columnName].type==="number" ? parseFloat(e.target.value) : e.target.value})}/>
-                  )}
-                  <input style={{width:"60px"}} type="number" value={weight} onChange={(e)=>update({weight: e.target.value})}/>
-                  <button onClick={remove}>x</button>
-                </span>
+      <div className="table-container">
+        <table>
+          {Object.entries(columnWeights).map(([columnName, weights])=>{
+            const add = () => {
+              const breakpoint = (
+                Columns[columnName].type==="number" ? Columns[columnName].maxValue :
+                Object.keys(Columns[columnName].values??{})[0]??"Target"
               )
-            })}
-            <button onClick={add}>+</button>
-          </div>
-        )
-      })}
+              columnWeights[columnName].push({breakpoint, weight: 3})
+              this.keyAddition++
+              this.setState({columnWeights})
+            }
+            return (
+              <tr key={columnName}>
+                <td style={{minWidth: "230px"}}>
+                  <b className="me-5">{Columns[columnName].displayName}: </b>
+                </td>
+                {weights.map(({breakpoint, weight}, index)=>{
+                  const update = (updates) => {
+                    const prevData = columnWeights[columnName][index]
+                    columnWeights[columnName][index] = {...prevData, ...updates}
+                    this.setState({columnWeights})
+                  }
+                  const remove = () => {
+                    columnWeights[columnName].splice(index, 1)
+                    this.keyAddition++
+                    this.setState({columnWeights})
+                  }
+                  return (
+                    <td key={index+"_"+keyAddition} style={{minWidth: "230px"}}>
+                      {Columns[columnName].subType==="enum" ? (
+                        <select style={{width:"120px"}} value={breakpoint} onChange={(e)=>update({breakpoint: e.target.value})}>
+                          {Object.entries(Columns[columnName].values).sort(([aKey,aVal],[bKey,bVal])=>bVal-aVal).map(([key,val])=>(
+                            <option key={key} value={key}>{key}</option>
+                          ))}
+                        </select>
+                      ) : (
+                        <input style={{width:"120px"}} type={Columns[columnName].type==="number" ? "number" : "text"} value={breakpoint} onChange={(e)=>update({breakpoint: Columns[columnName].type==="number" ? parseFloat(e.target.value) : e.target.value})}/>
+                      )}
+                      <input style={{width:"60px"}} type="number" value={weight} onChange={(e)=>update({weight: e.target.value})}/>
+                      <button onClick={remove}>x</button>
+                    </td>
+                  )
+                })}
+                <td>
+                  <button onClick={add}>+</button>
+                </td>
+              </tr>
+            )
+          })}
+        </table>
+      </div>
       <button onClick={()=>saveConfiguration({columnWeights, displayName})} disabled={isPublicConfiguration}>Save</button>
       <button onClick={()=>copyConfiguration({columnWeights, displayName})}>Copy</button>
       {!isPublicConfiguration && (
@@ -960,12 +969,12 @@ export class DeleteButton extends React.Component {
       const {needsConfirmation} = this.state
       const {
         onClick:propsOnClick = ()=>{}, 
-        size = "tiny", 
+        // size = "tiny", 
         className:propsClassName = undefined, 
         containerClassName = "", 
         tooltipDirection = "left", 
         tooltipText = undefined, 
-        buttonType = "text", 
+        // buttonType = "text", 
         buttonText = "Delete", 
         confirmationMessage = "confirm delete?"
       } = this.props
