@@ -19,3 +19,8 @@ TODO:
 - DONE - Play around with default weights
 - DONE - "Only Unwatched"
 - Fix Netlify
+- Switch alchemy section to a table
+
+I might be able to point to the big JSON file and have it hosted on a different website
+Another option is to compress the file
+But Netlify still isn't working so this might not even be the issue.
