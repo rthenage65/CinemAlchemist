@@ -1,4 +1,4 @@
-**IMPORTANT: To deploy, run 'npm run deploy'. It's using the npm gh-pages package and deploys to a special branch. You'll need to get the full movies metadata from Google Drive if you don't already have it, then change the gitignore to not ignore that file, and change the List.js to point to that one, then you can deploy.**
+**IMPORTANT: You can deploy normally now by pushing to branch 'main' because the data is compressed.**
 
 
 # Getting Started with Create React App
