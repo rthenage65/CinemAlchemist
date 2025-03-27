@@ -24,3 +24,5 @@ TODO:
 I might be able to point to the big JSON file and have it hosted on a different website
 Another option is to compress the file
 But Netlify still isn't working so this might not even be the issue.
+
+I used the gh-pages package to fix this. Now I'm not sure how I handled the large file. I can see that it was there in the other commits to the gh-pages branch. But it was removed. Okay, I see I still have it in Google Drive. And it's ignored in the gitignore. But how do I redeploy it? I can try just running npm run deploy, but won't that use the gitignore? I should change the gitignore back so it doesn't ignore that file and deploy, then change it back again.

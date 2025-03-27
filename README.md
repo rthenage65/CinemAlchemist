@@ -1,3 +1,6 @@
+**IMPORTANT: To deploy, run 'npm run deploy'. It's using the npm gh-pages package and deploys to a special branch. You'll need to get the full movies metadata from Google Drive if you don't already have it, then change the gitignore to not ignore that file, and change the List.js to point to that one, then you can deploy.**
+
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).

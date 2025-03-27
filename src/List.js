@@ -1,5 +1,6 @@
 import React from 'react';
 import movieData from './data/movies_metadata.json';
+// import movieData from './data/movies_metadata_full.json';
 import publicConfigurations from './data/public_configurations.json';
 import header from './img/cinemalchemist-text.webp';
 import background from './img/cinemalchemist-spilling-gold.webp';
