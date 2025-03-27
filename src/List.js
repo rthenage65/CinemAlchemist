@@ -1,6 +1,8 @@
 import React from 'react';
-import movieData from './data/movies_metadata.json';
-// import movieData from './data/movies_metadata_full.json';
+// Import local data as fallback
+import fallbackMovieData from './data/movies_metadata.json';
+// Import compressed data module
+import compressedDataModule from './data/movies_metadata_compressed.json';
 import publicConfigurations from './data/public_configurations.json';
 import header from './img/cinemalchemist-text.webp';
 import background from './img/cinemalchemist-spilling-gold.webp';
@@ -10,8 +12,55 @@ import FilterOptions from './components/FilterOptions';
 import Pagination from './components/Pagination';
 import Columns, { mostlyUnwatchedColumnWeights } from './config/columns';
 import { parseJSONArraySafe, getMovieValue } from './utils/movieUtils';
+// Import pako for decompression
+import * as pako from 'pako';
 
 console.time("init");
+
+// Set up initial movie data as the fallback
+let movieData = fallbackMovieData;
+
+// Function to decompress the full movie dataset
+const decompressMovieData = async () => {
+  try {
+    console.log('Starting decompression of movie data...');
+    
+    // Get the base64 compressed data
+    const base64Compressed = compressedDataModule.compressed;
+    console.log(`Compressed data size: ${base64Compressed.length} bytes`);
+    
+    // Convert base64 to binary data - works in both Node.js and browser environments
+    const compressedData = typeof Buffer !== 'undefined' 
+      ? Buffer.from(base64Compressed, 'base64')
+      : Uint8Array.from(atob(base64Compressed), c => c.charCodeAt(0));
+    
+    // Decompress the data
+    console.log('Decompressing data...');
+    const decompressedData = pako.inflate(compressedData, { to: 'string' });
+    console.log(`Decompressed data size: ${decompressedData.length} bytes`);
+    
+    // Parse the JSON data
+    const parsedData = JSON.parse(decompressedData);
+    console.log(`Successfully parsed data: ${parsedData.length} movies`);
+    
+    return parsedData;
+  } catch (error) {
+    console.error('Error decompressing movie data:', error);
+    console.warn('Falling back to smaller dataset');
+    return fallbackMovieData;
+  }
+};
+
+// Function to fetch the movie data
+const fetchMovieData = async () => {
+  try {
+    // Decompress and use the full dataset
+    return await decompressMovieData();
+  } catch (error) {
+    console.error('Error in fetchMovieData:', error);
+    return fallbackMovieData;
+  }
+};
 
 const PAGE_SIZE = 20;
 const primaryKey = "imdb_id";
@@ -21,7 +70,7 @@ const numberColumnEntries = Object.entries(Columns).filter(([columnName, columnI
 const enumColumnEntries = Object.entries(Columns).filter(([columnName, columnInfo]) => columnInfo.type === "string" && columnInfo.subType === "enum");
 const listEnumColumnEntries = Object.entries(Columns).filter(([columnName, columnInfo]) => columnInfo.type === "list" && columnInfo.subType === "enum");
 
-// Initialize min/max values and enum values
+// Initialize min/max values and enum values - will be set when data is loaded
 numberColumnEntries.forEach(([columnName, columnInfo]) => {
   columnInfo.maxValue = -Infinity;
   columnInfo.minValue = Infinity;
@@ -32,29 +81,6 @@ numberColumnEntries.forEach(([columnName, columnInfo]) => {
 });
 
 console.timeEnd("init");
-
-console.time("column values");
-movieData.forEach(movie => {
-  numberColumnEntries.forEach(([columnName, columnInfo]) => {
-    const value = parseFloat(movie[columnName]);
-    if (value > columnInfo.maxValue) {
-      columnInfo.maxValue = value;
-    } else if (value < columnInfo.minValue) {
-      columnInfo.minValue = value;
-    }
-  });
-  
-  enumColumnEntries.forEach(([columnName, columnInfo]) => {
-    const value = movie[columnName];
-    columnInfo.values[value] = (columnInfo.values[value] || 0) + 1;
-  });
-  
-  listEnumColumnEntries.forEach(([columnName, columnInfo]) => {
-    parseJSONArraySafe(movie[columnName]).forEach(({name:value}) => {
-      columnInfo.values[value] = (columnInfo.values[value] || 0) + 1;
-    });
-  });
-});
 
 console.log(`Columns:`, Columns);
 
@@ -96,7 +122,79 @@ export default class List extends React.Component {
       mostlyUnwatched: false,
       searchTerm: '',
       showOnlyStarred: false,
+      isLoading: true,
+      loadError: null
     };
+  }
+
+  // Fetch data when component mounts
+  componentDidMount() {
+    this.loadMovieData();
+  }
+
+  // Function to load movie data from Google Drive
+  loadMovieData = async () => {
+    try {
+      this.setState({ isLoading: true, loadError: null });
+      
+      // Fetch the movie data
+      const data = await fetchMovieData();
+      
+      // Update the global movieData variable
+      movieData = data;
+      this.lastSort = {} // reset so that it will refresh movie data
+      
+      // Initialize column values after fetching movie data
+      this.initializeColumnValues();
+      
+      this.setState({ isLoading: false });
+    } catch (error) {
+      console.error('Error loading movie data:', error);
+      this.setState({ 
+        isLoading: false, 
+        loadError: 'Failed to load full movie dataset. Using smaller fallback dataset.' 
+      });
+      
+      // Initialize with fallback data
+      movieData = fallbackMovieData;
+      this.initializeColumnValues();
+    }
+  }
+  
+  // Initialize column values
+  initializeColumnValues = () => {
+    // Reset values
+    numberColumnEntries.forEach(([columnName, columnInfo]) => {
+      columnInfo.maxValue = -Infinity;
+      columnInfo.minValue = Infinity;
+    });
+    
+    ([...enumColumnEntries, ...listEnumColumnEntries]).forEach(([columnName, columnInfo]) => {
+      columnInfo.values = {};
+    });
+    
+    // Calculate values from movie data
+    movieData.forEach(movie => {
+      numberColumnEntries.forEach(([columnName, columnInfo]) => {
+        const value = parseFloat(movie[columnName]);
+        if (value > columnInfo.maxValue) {
+          columnInfo.maxValue = value;
+        } else if (value < columnInfo.minValue) {
+          columnInfo.minValue = value;
+        }
+      });
+      
+      enumColumnEntries.forEach(([columnName, columnInfo]) => {
+        const value = movie[columnName];
+        columnInfo.values[value] = (columnInfo.values[value] || 0) + 1;
+      });
+      
+      listEnumColumnEntries.forEach(([columnName, columnInfo]) => {
+        parseJSONArraySafe(movie[columnName]).forEach(({name:value}) => {
+          columnInfo.values[value] = (columnInfo.values[value] || 0) + 1;
+        });
+      });
+    });
   }
 
   saveSettings = (settings) => {
@@ -210,7 +308,9 @@ export default class List extends React.Component {
       onlyUnwatched, 
       mostlyUnwatched, 
       searchTerm, 
-      showOnlyStarred
+      showOnlyStarred,
+      isLoading,
+      loadError
     } = this.state;
     
     const isPublicConfiguration = savedSettings.currentConfigurationId in publicConfigurations;
@@ -294,6 +394,20 @@ export default class List extends React.Component {
             View the resulting Gold List at the bottom.
           </p>
         </header>
+        
+        {isLoading && (
+          <div className="loading-container">
+            <div className="loading-spinner"></div>
+            <p>Loading and decompressing full movie data...</p>
+            <small>This may take a moment. The full dataset contains thousands of movies.</small>
+          </div>
+        )}
+        
+        {loadError && (
+          <div className="error-message">
+            <p>{loadError}</p>
+          </div>
+        )}
         <ColumnWeights 
           configuration={configuration} 
           saveConfiguration={saveConfiguration} 
