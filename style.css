@@ -36,6 +36,33 @@ thead {
   /* backdrop-filter: blur(20px); */
 }
 
+.search-container {
+  margin: 15px 0;
+}
+
+.search-input {
+  padding: 8px;
+  width: 250px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.star-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 24px;
+  color: #ccc;
+}
+
+.star-button.starred {
+  color: gold;
+}
+
+.star-button:hover {
+  transform: scale(1.2);
+}
+
 /* .mask {
   position: absolute;
   top: 0;

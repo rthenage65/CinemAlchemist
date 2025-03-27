@@ -1,12 +1,15 @@
 {
   "files": {
-    "main.js": "/CinemAlchemist/static/js/main.e55d3bff.js",
+    "main.css": "/CinemAlchemist/static/css/main.3e3291b1.css",
+    "main.js": "/CinemAlchemist/static/js/main.b2df85ce.js",
     "static/media/cinemalchemist-spilling-gold.webp": "/CinemAlchemist/static/media/cinemalchemist-spilling-gold.67a9ead59b58eb66a90a.webp",
     "static/media/cinemalchemist-text.webp": "/CinemAlchemist/static/media/cinemalchemist-text.9ed0e719b08d05f5e8c1.webp",
     "index.html": "/CinemAlchemist/index.html",
-    "main.e55d3bff.js.map": "/CinemAlchemist/static/js/main.e55d3bff.js.map"
+    "main.3e3291b1.css.map": "/CinemAlchemist/static/css/main.3e3291b1.css.map",
+    "main.b2df85ce.js.map": "/CinemAlchemist/static/js/main.b2df85ce.js.map"
   },
   "entrypoints": [
-    "static/js/main.e55d3bff.js"
+    "static/css/main.3e3291b1.css",
+    "static/js/main.b2df85ce.js"
   ]
 }
