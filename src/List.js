@@ -378,7 +378,8 @@ const DefaultSettings = {
     }
   },
   currentConfigurationId: initialConfigurationId,
-  movieSettings: {} // settings for individual movies, like watchlist or watched
+  movieSettings: {}, // settings for individual movies, like watchlist or watched
+  starredMovies: {} // store starred movies by primary key
   // columnWeights: {
   //   ...Object.entries(Columns).reduce((columnWeights, [colName, colInfo])=>{
   //     if (colInfo.weighable) {
@@ -413,6 +414,10 @@ export default class List extends React.Component {
     try {
       savedSettings = JSON.parse(localStorage.getItem('savedSettings'))
       savedSettings = {...DefaultSettings, ...savedSettings}
+      // Ensure starredMovies exists in the structure
+      if (!savedSettings.starredMovies) {
+        savedSettings.starredMovies = {}
+      }
     } catch (e) {
       savedSettings = DefaultSettings
     }
@@ -423,6 +428,8 @@ export default class List extends React.Component {
       onlyUnsortedWatched: false,
       onlyUnwatched: false,
       mostlyUnwatched: false,
+      searchTerm: '',
+      showOnlyStarred: false,
     }
   }
   saveSettings=(settings)=>{
@@ -545,7 +552,7 @@ export default class List extends React.Component {
   // }
   render() {
     console.time("render rows")
-    const {pageNumber, savedSettings, freezeListOrder, onlyUnsortedWatched, onlyUnwatched, mostlyUnwatched} = this.state
+    const {pageNumber, savedSettings, freezeListOrder, onlyUnsortedWatched, onlyUnwatched, mostlyUnwatched, searchTerm, showOnlyStarred} = this.state
     const isPublicConfiguration = savedSettings.currentConfigurationId in publicConfigurations
     const configuration = structuredClone(isPublicConfiguration ? publicConfigurations[savedSettings.currentConfigurationId] : savedSettings.configurations[savedSettings.currentConfigurationId])
     configuration.columnWeights = {...DefaultSettings.columnWeights, ...configuration.columnWeights} // if they were missing any columns, add them in
@@ -657,6 +664,19 @@ export default class List extends React.Component {
           <input type="checkbox" value={mostlyUnwatched} onChange={(e)=>this.setState({mostlyUnwatched: !mostlyUnwatched, pageNumber: 0})} />
           <span>Mostly Unwatched</span>
         </div>
+        <div>
+          <input type="checkbox" value={showOnlyStarred} onChange={(e)=>this.setState({showOnlyStarred: !showOnlyStarred, pageNumber: 0})} />
+          <span>Show Only Starred</span>
+        </div>
+        <div className="search-container">
+          <input 
+            type="text" 
+            placeholder="Search by title" 
+            value={searchTerm}
+            onChange={(e) => this.setState({searchTerm: e.target.value, pageNumber: 0})}
+            className="search-input"
+          />
+        </div>
         <div className="table-container">
           <table className="table">
             <thead className="sticky-top">
@@ -665,6 +685,7 @@ export default class List extends React.Component {
                   return <th key={columnName}>{columnInfo.displayName}</th>
                 })}
                 <th>Score</th>
+                <th>Star</th>
               </tr>
             </thead>
             <tbody>
@@ -672,7 +693,14 @@ export default class List extends React.Component {
                 onlyUnsortedWatched ? sortedList.filter(({movieIndex})=>isNaN(parseInt(savedSettings.movieSettings[movieData[movieIndex][primaryKey]]?.watched))) :
                 onlyUnwatched ? sortedList.filter(({movieIndex})=>parseInt(savedSettings.movieSettings[movieData[movieIndex][primaryKey]]?.watched??0)===0) : 
                 sortedList
-              ).slice(PAGE_SIZE*pageNumber, PAGE_SIZE*(pageNumber+1)).map(({movieIndex, sumValue}) => (
+              ).filter(({movieIndex}) => {
+                // Filter by search term if it exists
+                return !searchTerm || movieData[movieIndex].title.toLowerCase().includes(searchTerm.toLowerCase())
+              }).filter(({movieIndex}) => {
+                // Filter by starred status if showOnlyStarred is true
+                return !showOnlyStarred || savedSettings.starredMovies[movieData[movieIndex][primaryKey]] === true
+              })
+              .slice(PAGE_SIZE*pageNumber, PAGE_SIZE*(pageNumber+1)).map(({movieIndex, sumValue}) => (
                 <MovieRow key={movieIndex} movie={movieData[movieIndex]} sumValue={sumValue} savedSettings={savedSettings} saveSettings={this.saveSettings} configuration={configuration} />
               ))}
             </tbody>
@@ -761,54 +789,56 @@ class ColumnWeights extends React.Component {
       </div>
       <div className="table-container">
         <table>
-          {Object.entries(columnWeights).map(([columnName, weights])=>{
-            const add = () => {
-              const breakpoint = (
-                Columns[columnName].type==="number" ? Columns[columnName].maxValue :
-                Object.keys(Columns[columnName].values??{})[0]??"Target"
+          <tbody>
+            {Object.entries(columnWeights).map(([columnName, weights])=>{
+              const add = () => {
+                const breakpoint = (
+                  Columns[columnName].type==="number" ? Columns[columnName].maxValue :
+                  Object.keys(Columns[columnName].values??{})[0]??"Target"
+                )
+                columnWeights[columnName].push({breakpoint, weight: 3})
+                this.keyAddition++
+                this.setState({columnWeights})
+              }
+              return (
+                <tr key={columnName}>
+                  <td style={{minWidth: "230px"}}>
+                    <b className="me-5">{Columns[columnName].displayName}: </b>
+                  </td>
+                  {weights.map(({breakpoint, weight}, index)=>{
+                    const update = (updates) => {
+                      const prevData = columnWeights[columnName][index]
+                      columnWeights[columnName][index] = {...prevData, ...updates}
+                      this.setState({columnWeights})
+                    }
+                    const remove = () => {
+                      columnWeights[columnName].splice(index, 1)
+                      this.keyAddition++
+                      this.setState({columnWeights})
+                    }
+                    return (
+                      <td key={index+"_"+keyAddition} style={{minWidth: "230px"}}>
+                        {Columns[columnName].subType==="enum" ? (
+                          <select style={{width:"120px"}} value={breakpoint} onChange={(e)=>update({breakpoint: e.target.value})}>
+                            {Object.entries(Columns[columnName].values).sort(([aKey,aVal],[bKey,bVal])=>bVal-aVal).map(([key,val])=>(
+                              <option key={key} value={key}>{key}</option>
+                            ))}
+                          </select>
+                        ) : (
+                          <input style={{width:"120px"}} type={Columns[columnName].type==="number" ? "number" : "text"} value={breakpoint} onChange={(e)=>update({breakpoint: Columns[columnName].type==="number" ? parseFloat(e.target.value) : e.target.value})}/>
+                        )}
+                        <input style={{width:"60px"}} type="number" value={weight} onChange={(e)=>update({weight: e.target.value})}/>
+                        <button onClick={remove}>x</button>
+                      </td>
+                    )
+                  })}
+                  <td>
+                    <button onClick={add}>+</button>
+                  </td>
+                </tr>
               )
-              columnWeights[columnName].push({breakpoint, weight: 3})
-              this.keyAddition++
-              this.setState({columnWeights})
-            }
-            return (
-              <tr key={columnName}>
-                <td style={{minWidth: "230px"}}>
-                  <b className="me-5">{Columns[columnName].displayName}: </b>
-                </td>
-                {weights.map(({breakpoint, weight}, index)=>{
-                  const update = (updates) => {
-                    const prevData = columnWeights[columnName][index]
-                    columnWeights[columnName][index] = {...prevData, ...updates}
-                    this.setState({columnWeights})
-                  }
-                  const remove = () => {
-                    columnWeights[columnName].splice(index, 1)
-                    this.keyAddition++
-                    this.setState({columnWeights})
-                  }
-                  return (
-                    <td key={index+"_"+keyAddition} style={{minWidth: "230px"}}>
-                      {Columns[columnName].subType==="enum" ? (
-                        <select style={{width:"120px"}} value={breakpoint} onChange={(e)=>update({breakpoint: e.target.value})}>
-                          {Object.entries(Columns[columnName].values).sort(([aKey,aVal],[bKey,bVal])=>bVal-aVal).map(([key,val])=>(
-                            <option key={key} value={key}>{key}</option>
-                          ))}
-                        </select>
-                      ) : (
-                        <input style={{width:"120px"}} type={Columns[columnName].type==="number" ? "number" : "text"} value={breakpoint} onChange={(e)=>update({breakpoint: Columns[columnName].type==="number" ? parseFloat(e.target.value) : e.target.value})}/>
-                      )}
-                      <input style={{width:"60px"}} type="number" value={weight} onChange={(e)=>update({weight: e.target.value})}/>
-                      <button onClick={remove}>x</button>
-                    </td>
-                  )
-                })}
-                <td>
-                  <button onClick={add}>+</button>
-                </td>
-              </tr>
-            )
-          })}
+            })}
+          </tbody>
         </table>
       </div>
       <button onClick={()=>saveConfiguration({columnWeights, displayName})} disabled={isPublicConfiguration}>Save</button>
@@ -828,6 +858,17 @@ class MovieRow extends React.Component {
     this.state = {
       overrideThisMovieSettings: {}, 
     }
+  }
+  
+  toggleStar = () => {
+    const { movie, savedSettings, saveSettings } = this.props
+    const movieId = movie[primaryKey]
+    const isCurrentlyStarred = savedSettings.starredMovies[movieId] === true
+    
+    const updatedStarredMovies = {...savedSettings.starredMovies}
+    updatedStarredMovies[movieId] = !isCurrentlyStarred
+    
+    saveSettings({ starredMovies: updatedStarredMovies })
   }
 
   render () {
@@ -892,6 +933,14 @@ class MovieRow extends React.Component {
           </td>
         })}
         <td>{parseFloat(parseFloat(sumValue).toFixed(2))}</td>
+        <td>
+          <button 
+            onClick={this.toggleStar}
+            className={`star-button ${savedSettings.starredMovies[movie[primaryKey]] ? 'starred' : ''}`}
+          >
+            {savedSettings.starredMovies[movie[primaryKey]] ? '★' : '☆'}
+          </button>
+        </td>
       </tr>
     )
   }
